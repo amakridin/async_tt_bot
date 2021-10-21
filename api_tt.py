@@ -8,7 +8,10 @@ import aiohttp
 import config
 from errors import DownstreamServiceError
 
-logging.basicConfig(filename="bot.log", level=logging.INFO)
+logging.basicConfig(filename="bot.log",
+                    format='[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.ERROR)
 
 
 class BaseApiTamTam:
@@ -43,11 +46,25 @@ class ApiTamTam(BaseApiTamTam):
             return urljoin(config.TAM_TAM_URL, f"updates?access_token={config.TAM_TAM_TOKEN}")
         return urljoin(config.TAM_TAM_URL, f"updates?access_token={config.TAM_TAM_TOKEN}&marker={marker}")
 
-
-
-# async def main():
-#     api = ApiTamTam()
-#     await api.send_json(-66907885424, {"text": "hello"})
-#
-#
-# asyncio.run(main())
+    async def send_photo(self, chat_id, msg, img_path="img.png"):
+        url = f'https://botapi.tamtam.chat/uploads?type=image&access_token={config.TAM_TAM_TOKEN}'
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url=url) as r:
+                jsn = await r.json()
+                url_load = jsn['url']
+                files = {'request_file': open(img_path, 'rb')}
+            async with session.post(url=url_load, data=files) as r:
+                t = await r.text()
+                ret = eval(t)
+                for key in (ret['photos'].keys()):
+                    url_token = ret['photos'][key]['token']
+                    json_init = {
+                        "text": f"{msg}",
+                        "attachments": [{
+                            "type": "image",
+                            "payload": {
+                                "token": f"{url_token}"}
+                        }]}
+            url_init = urljoin(config.TAM_TAM_URL_MESSAGE, f"?chat_id={chat_id}&access_token={config.TAM_TAM_TOKEN}")
+            async with session.post(url=url_init, json=json_init) as res:
+                await self.check_errors(res)

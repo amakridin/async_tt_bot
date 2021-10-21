@@ -1,13 +1,15 @@
 import logging
 
-logging.basicConfig(filename="bot.log", level=logging.ERROR)
+logging.basicConfig(filename="bot.log",
+                    format='[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.ERROR)
 
 
 class BaseError(Exception):
     message: str = "Unexpected exception"
     code: str = "unexpected_exception"
     status_code: int = 500
-    logging.error(f"status_code: {status_code}, code: {code}, message: {message}")
 
 
 class DownstreamServiceError(BaseError):
