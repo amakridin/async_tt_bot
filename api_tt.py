@@ -40,12 +40,12 @@ class ApiTamTam(BaseApiTamTam):
         url_init = urljoin(self.TAM_TAM_URL_MESSAGE, f"?chat_id={chat_id}&access_token={self.TAM_TAM_TOKEN}")
         async with aiohttp.ClientSession() as session:
             async with session.post(url=url_init, json=jsn) as resp:
-                self.check_errors(resp)
+                await self.check_errors(resp)
 
     async def get_pool_messages(self, marker: int = 0):
         async with aiohttp.ClientSession() as session:
             async with session.get(url=self._get_tamram_url(marker=marker), timeout=self.REQUEST_TIMEOUT) as resp:
-                self.check_errors(resp)
+                await self.check_errors(resp)
 
     def _get_tamram_url(self, marker: int = 0) -> str:
         if marker == 0:
